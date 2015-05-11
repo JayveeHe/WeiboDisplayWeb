@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <link href="css/charisma-app.css" rel="stylesheet">
+    <link href='bower_components/chosen/chosen.min.css' rel='stylesheet'>
+    <link href='bower_components/colorbox/example3/colorbox.css' rel='stylesheet'>
+    <link href='bower_components/responsive-tables/responsive-tables.css' rel='stylesheet'>
+    <link href='bower_components/bootstrap-tour/build/css/bootstrap-tour.min.css' rel='stylesheet'>
+    <link href='css/jquery.noty.css' rel='stylesheet'>
+    <link href='css/noty_theme_default.css' rel='stylesheet'>
+    <link href='css/elfinder.min.css' rel='stylesheet'>
+    <link href='css/elfinder.theme.css' rel='stylesheet'>
+    <link href='css/jquery.iphone.toggle.css' rel='stylesheet'>
+    <link href='css/uploadify.css' rel='stylesheet'>
+    <link href='css/animate.min.css' rel='stylesheet' type="text/css">
+    <link href='css/content.css' rel='stylesheet' type="text/css">
+    <link href='css/min.css' rel='stylesheet' type="text/css">
+    <script src="bower_components/jquery/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link id="bs-css" href="css/bootstrap-cerulean.min.css" rel="stylesheet">
+
+    <!--禁止缓存
+    <META HTTP-EQUIV="pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Cache-Control" CONTENT="no-store, must-revalidate">
+    <META HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
+    <META HTTP-EQUIV="expires" CONTENT="0">
+    -->
+    <!--JQuery -->
+    <!--Bootstrap
+    <script src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+    <link href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+     -->
+    <script src="js/sigma.min.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/highcharts.js"></script>
+    <script src="js/plugins/sigma.parsers.gexf.js"></script>
+    <script src="js/plugins/gexf-parser.js"></script>
+    <title>传播分析</title>
+    <!--
+        <script>
+            $(function () {
+                $(".btn").click(function () {
+                    $(this).button('loading').delay(2000).queue(function () {
+                        $(this).button('reset');
+                    });
+                });
+            });
+        </script>
+        -->
+
+    <script>
+        $(function () {
+            $("#url_submit").click(function () {
+                alert('正在分析，请耐心等待');
+                //$(this).button('loading');
+                var url = $("#url_input").val();
+                var timestamp = new Date().getTime();
+                //loadGexf();
+                $.post('/gexf', {url: url, timestamp: timestamp }, function (data) {
+                    alert("ok");
+                    var respData = JSON.parse(data);
+                    $("#originText").text(respData.weiboText);
+                    var seriesData = [];
+                    //alert(respData.time_series.length);
+                    for (var i = 0; i < respData.time_series.length; i++) {
+                        seriesData.push([respData.repost_startTime + respData.time_interval * 60000 * i, respData.time_series[i]])
+                    }
+                    //alert(seriesData);
+                    loadChart("repostLine", seriesData);
+                    $("#repostLine_title").text("转发曲线\t转发总数："+respData.repost_count);
+                    loadRanks(respData.repostRank);
+                    loadGexf(timestamp);
+                    //$("#url_submit").button('reset')
+                });
+
+            })
+        });
+    </script>
+    <script>
+        function reloadPage() {
+
+        }
+
+        function loadChart(chartName, seriesData) {
+            //微博转发
+            Highcharts.setOptions({
+                lang: {
+                    resetZoom: '重置'
+                }
+            });
+            var repostChart = new Highcharts.Chart({
+                chart: {
+                    renderTo: chartName,
+                    type: "areaspline",
+                    zoomType:"x",
+                    backgroundColor: 'rgba(255, 255, 255, 0)',
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotBackgroundImage: null,
+                    plotBorderWidth: null
+                },
+                title: {text: "近期转发曲线",
+                    style: {
+                        color: '#fff'
+                    }},
+                legend: {
+                    enabled: true
+                },
+                xAxis: {
+                    type: 'datetime'
+                },
+                yAxis: {
+                    title: {
+                        text: '转发次数/5minutes',
+                        style: {
+                            color: '#fff'
+                        }
+                    },
+                    labels: {
+                        style: {color: '#000'}
+                    },
+                    lineColor: '#000',
+                    gridLineColor: '#000'
+                },
+                tooltip: {
+                    shared: true,
+                    valueSuffix: ''
+                },
+                credits: {
+                    enabled: false
+                },
+                plotOptions: {
+                    areaspline: {
+                        fillOpacity: 0.8
+                    }
+                },
+                series: [
+                    {name: '转发次数',
+                        type: 'area',
+                        fillColor: {
+                            linearGradient: [0, 0, 0, 500],
+                            stops: [
+                                [0, Highcharts.getOptions().colors[0]],
+                                [1, 'rgba(2,0,0,0)']
+                            ]
+                        },
+                        data: []}
+                ]
+            });
+            repostChart.series[0].setData(seriesData);
+            repostChart.redraw();
+        }
+
+        function loadRanks(rankData) {
+            var tableObj = $("#ranktable");
+            tableObj.empty();
+            tableObj.append("<tr style=\"border-bottom: 1px solid #FFB6C1;height: 5px;\"><th>排名</th><th style=\"width: 200px\">昵称</th><th>二次转发数</th></tr>");
+            for (var i = 0; i < 5; i++) {
+                tableObj.append("<tr class=\"tr" + i % 2 + "\"><td style=\"width:35px; color: #ff0325;\"><span class=\"tdtop\">" + rankData[i].rank + "</span></td><td style=\"width:147px; \"class=\"rankname\">" + rankData[i].name + "</td><td style=\"width:35px; color: #ff0325;\">" + rankData[i].repost_count + "</td></tr>");
+                //tableObj.rows[i].cell[1].innerHTML = rankData[i].name
+            }
+        }
+        var actualGraph;
+        function loadGexf(timestamp) {
+            //alert('loadgexf');
+            // sigma.refresh();
+            if (actualGraph) {
+                //alert("if");
+                sigma.parsers.gexf(
+                                'data/gexf/result-' + timestamp + '.gexf',
+                        actualGraph,
+                        function (s) {
+                            // This function will be executed when the
+                            // graph is displayed, with "s" the related
+                            // sigma instance.
+                            actualGraph.refresh();
+                        }
+                );
+            } else {
+                //alert("else");
+                sigma.parsers.gexf(
+                                'data/gexf/result-' + timestamp + '.gexf',
+                        { // Here is the ID of the DOM element that
+                            // will contain the graph:
+                            container: 'graph-container'
+                        },
+                        function (s) {
+                            // This function will be executed when the
+                            // graph is displayed, with "s" the related
+                            // sigma instance.
+                            actualGraph = s;
+                        }
+                );
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="box-header well" data-original-title="">微博转发分析</div>
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <form class="form-inline">
+                <div class="box-content frameborder">
+                    <span>输入微博地址：</span>
+                    <input type="text" id="url_input" class="form-control" placeholder="待分析的微博地址">
+                    <button type="button" class="btn btn-primary" id="url_submit" datadata-loading-text="Loading...">
+                        分析
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6 frameborder" style="top: 10px">
+            <img src="images/sigma/2-small.png" class="titlelogo">
+
+            <div class="title">
+                <span class="top-left">微博内容</span>
+            </div>
+
+            <div class="box-content " id="originText">
+
+            </div>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 frameborder" style="height: 600px;top: 20px;bottom:20px">
+            <img src="images/sigma/3-small.png" class="titlelogo">
+
+            <div class="title">
+                <span>转发层级图</span>
+            </div>
+            <div id="graph-container" class="box" style="height: 95%;width: 100%"></div>
+            <style>
+                #graph-container {
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    position: absolute;
+                }
+            </style>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 frameborder" style="top: 40px;right: 10px">
+            <img src="images/weibochart/3-small.png" class="titlelogo">
+
+            <div class="title">
+                <span class="top-left" id="repostLine_title">转发曲线</span>
+            </div>
+            <div class="box-content" id="repostLine" style="height:300px">
+            </div>
+        </div>
+        <div class="col-md-4 frameborder" style="top: 40px;left: 10px">
+            <img src="images/influencerank/2-small.png" class="titlelogo">
+
+            <div class="title">
+                <span class="top-left">转发排行</span>
+            </div>
+            <table class="table" id="ranktable" style="height:300px">
+                <tr style="border-bottom: 1px solid #FFB6C1;height: 15px;">
+                    <th>排名</th>
+                    <th style="width: 200px">昵称</th>
+                    <th>二次转发数</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
