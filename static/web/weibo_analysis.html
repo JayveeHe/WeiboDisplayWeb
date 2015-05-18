@@ -42,6 +42,9 @@
     <script src="js/highcharts.js"></script>
     <script src="js/plugins/sigma.parsers.gexf.js"></script>
     <script src="js/plugins/gexf-parser.js"></script>
+    <script type="text/javascript" src="hotEventJS.js">
+    </script>
+
     <title>传播分析</title>
     <!--
         <script>
@@ -59,35 +62,31 @@
         $(function () {
             $("#url_submit").click(function () {
                 alert('正在分析，请耐心等待');
-                //$(this).button('loading');
+                $(this).button('loading');
                 var url = $("#url_input").val();
                 var timestamp = new Date().getTime();
                 //loadGexf();
                 $.post('/gexf', {url: url, timestamp: timestamp }, function (data) {
+                    //alert(respData.time_series.length);
+                    $("#url_submit").button('reset');
                     alert("ok");
                     var respData = JSON.parse(data);
-                    $("#originText").text("@"+respData.userName+":\n"+respData.weiboText);
+                    $("#originText").text("@" + respData.userName + ":\n" + respData.weiboText);
                     var seriesData = [];
-                    //alert(respData.time_series.length);
                     for (var i = 0; i < respData.time_series.length; i++) {
                         seriesData.push([respData.repost_startTime + respData.time_interval * 60000 * i, respData.time_series[i]])
                     }
                     //alert(seriesData);
                     loadChart("repostLine", seriesData);
-                    $("#repostLine_title").text("转发曲线\t转发总数："+respData.repost_count);
+                    $("#repostLine_title").text("转发曲线\t转发总数：" + respData.repost_count);
                     loadRanks(respData.repostRank);
                     loadGexf(timestamp);
-                    //$("#url_submit").button('reset')
                 });
 
             })
         });
     </script>
     <script>
-        function reloadPage() {
-
-        }
-
         function loadChart(chartName, seriesData) {
             //微博转发
             Highcharts.setOptions({
@@ -99,7 +98,7 @@
                 chart: {
                     renderTo: chartName,
                     type: "areaspline",
-                    zoomType:"x",
+                    zoomType: "x",
                     backgroundColor: 'rgba(255, 255, 255, 0)',
                     plotBackgroundColor: null,
                     plotBorderWidth: null,
@@ -242,7 +241,7 @@
             <div class="title">
                 <span>转发层级图</span>
             </div>
-            <div id="graph-container" class="box" style="height: 95%;width: 100%"></div>
+            <div id="graph-container" class="box" style="height: 90%;width: 100%"></div>
             <style>
                 #graph-container {
                     top: 0;
@@ -277,6 +276,43 @@
                     <th>二次转发数</th>
                 </tr>
             </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div id="weibo"
+                 style="min-width: 280px; width:100%;height: 400px; margin: 20px auto; float:left;position:relative;top:20px;"
+                 class="frameborder">
+                <div class="title">
+                    <span>热点事件转发预测</span>
+                </div>
+                <div style="top:5px;position:relative;width:30%">
+                    <form action=""><select id="Select1" onchange="showChart(this.value)" style="width:200px;"
+                                            data-placeholder="近期微博列表">
+                        <option value="null" style="width:200px"></option>
+                        <option value="liulingtong" id="1" style="width:200px">六小龄童
+                            泣告：亲爱的父亲六龄童章宗义于1月31日（大年初一）在绍兴病逝，享年90岁，愿父亲一路走好！
+                        </option>
+                        <option value="wenzhang" id="2" style="width:200px">文章同學 @陈朝华 @谢晓
+                            两位领导，我错了，全是我一个人的错！你们都为人父母，请问何时可以结束？要玩跟我玩，别涉及任何人，我陪你！我贱命一条，陪你们到底！
+                        </option>
+                        <option value="suning" id="3" style="width:200px">苏宁李斌
+                            保持价格优势是我们对消费者最基本的承诺，我重申：苏宁易购包括家电在内的所有产品价格必然低于京东,任何网友发现苏宁易购价格高于京东,我们都会即时调价,并给予已经购买反馈者两倍差价赔付。明天9：00开始，苏宁易购将启动史上最强力度的促销，我一定能够帮刘总提前、超额完成减员增效目标。一起努力
+                        </option>
+                    </select></form>
+                </div>
+                <div id="container1" style="width:100%;margin: 0 auto; float:left;height:330px;">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div style="min-width: 280px; width:100%; height: 240px; margin: 0 auto; float:right;position:relative;top:40px;"
+                 class="col-md-4 frameborder">
+                <div class="title">
+                    <span>微博内容</span>
+                </div>
+                <div id="weibotext" class="text"></div>
+            </div>
         </div>
     </div>
 </div>

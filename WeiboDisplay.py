@@ -34,13 +34,14 @@ def get_gexf():
     # import subprocess
     #
     # subprocess.call(['java', '-jar', '%s/jars/WeiboDisseminationAnalysis.jar' % web_path])
-    pro =  subprocess.Popen(cmd_text)
+    pro = subprocess.Popen(cmd_text)
     # print os.popen(cmd_text)
     # Popen.wait()
     pro.wait()
     datafile = open('%s/data/gexf/result-%s-data.txt' % (web_path, timestamp), 'r')
     return datafile.read()
     # return '123123'
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1234, debug=True)
