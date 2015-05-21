@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-
     <link href="css/charisma-app.css" rel="stylesheet">
     <link href='bower_components/chosen/chosen.min.css' rel='stylesheet'>
     <link href='bower_components/colorbox/example3/colorbox.css' rel='stylesheet'>
@@ -24,26 +23,123 @@
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <link id="bs-css" href="css/bootstrap-cerulean.min.css" rel="stylesheet">
 
-    <!--禁止缓存
-    <META HTTP-EQUIV="pragma" CONTENT="no-cache">
-    <META HTTP-EQUIV="Cache-Control" CONTENT="no-store, must-revalidate">
-    <META HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
-    <META HTTP-EQUIV="expires" CONTENT="0">
-    -->
-    <!--JQuery -->
-    <!--Bootstrap
-    <script src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
-    <link href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
-    <script src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-     -->
     <script src="js/sigma.min.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/highcharts.js"></script>
     <script src="js/plugins/sigma.parsers.gexf.js"></script>
     <script src="js/plugins/gexf-parser.js"></script>
-    <script type="text/javascript" src="hotEventJS.js">
-    </script>
+
+    <!--自增的js函数-->
+    <script type="text/javascript" src="hotEventJS.js"></script>
+    <script src="WeiboAnalysis.js"></script>
+
+
+    <!--ITTC-->
+    <!--<script src="dataMiningResource/highchartsNew.js"></script>-->
+    <script src="dataMiningResource/js/libraries/RGraph.common.core.js"></script>
+    <script src="dataMiningResource/js/libraries/RGraph.common.tooltips.js"></script>
+    <script src="dataMiningResource/js/libraries/RGraph.common.key.js"></script>
+    <script src="dataMiningResource/js/libraries/RGraph.common.dynamic.js"></script>
+    <script src="dataMiningResource/js/libraries/RGraph.common.effects.js"></script>
+    <script src="dataMiningResource/js/raphael.min.js"></script>
+    <script src="dataMiningResource/js/jquery.tooltip.js"></script>
+    <script src="dataMiningResource/js/g.raphael.js"></script>
+    <!-- menulist-->
+    <link href="dataMiningResource/js/menulist/style.css" rel="stylesheet" type="text/css"/>
+    <!-- toolbar -->
+    <script src="dataMiningResource/js/menu/jquery-ui-1.10.4.min.js"></script>
+    <link href="dataMiningResource/js/menu/jquery-ui.css" rel="stylesheet" type="text/css">
+    <!--chosen -->
+    <script src="dataMiningResource/js/chosen/chosen.jquery.min.js"></script>
+    <link href="dataMiningResource/js/chosen/chosen.css" rel="stylesheet" type="text/css">
+
+    <script src="dataMiningResource/js/plotcharts.js"></script>
+    <script src="dataMiningResource/chartOptions.js"></script>
+
+    <style type="text/css">
+        div#container {
+            width: 1000px;
+            margin-top: 0;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        div#headerFront {
+            width: 1000px;
+            height: 10px;
+            background-color: #6699CC;
+            margin: 0;
+        }
+
+        div#header {
+            background-color: transparent;
+            width: 1000px;
+            height: 100px;
+            text-align: center;
+            font-size: 40px;
+            margin: 0;
+        }
+
+        div#footer {
+            clear: both;
+            margin: 60px auto;
+            color: #ffffff;
+            text-align: center;
+            height: 20px;
+            width: 980px;
+            padding: 30px;
+            background: #336699;
+        }
+
+        /*menu*/
+        <!--
+
+        -->
+
+        .ui-menu {
+            width: 28px;
+            float: left;
+            z-index: 7;
+            top: 40px;
+        }
+    </style>
+
+    <style>
+        div#Head {
+            border: #6699CC;
+            border-style: solid;
+            border-width: 5px;
+            width: auto;
+            height: 100px;
+        }
+
+        div#introduce {
+            border-bottom: groove 2px; /*border-width:2px;*/
+            width: 80%;
+            height: 25px;
+            font-size: 18px;
+            color: #000000;
+            margin: 10px auto 0 auto;
+            text-align: center;
+        }
+
+        div#caozuo {
+            margin: 0 auto;
+            width: 50%;
+        }
+
+        div#content {
+            align: center;
+            height: 2040px;
+            width: 1000px;
+            float: left;
+            border-left: 1px solid #D8F6FF040;
+            border-right: 1px solid #D8F6FF040;
+            border-bottom: 1px solid #D8F6FF040;
+        }
+    </style>
+    <!--END ITTC-->
+
 
     <title>传播分析</title>
     <!--
@@ -58,160 +154,64 @@
         </script>
         -->
 
-    <script>
-        $(function () {
-            $("#url_submit").click(function () {
-                alert('正在分析，请耐心等待');
-                $(this).button('loading');
-                var url = $("#url_input").val();
-                var timestamp = new Date().getTime();
-                //loadGexf();
-                $.post('/gexf', {url: url, timestamp: timestamp }, function (data) {
-                    //alert(respData.time_series.length);
-                    $("#url_submit").button('reset');
-                    alert("ok");
-                    var respData = JSON.parse(data);
-                    $("#originText").text("@" + respData.userName + ":\n" + respData.weiboText);
-                    var seriesData = [];
-                    for (var i = 0; i < respData.time_series.length; i++) {
-                        seriesData.push([respData.repost_startTime + respData.time_interval * 60000 * i, respData.time_series[i]])
-                    }
-                    //alert(seriesData);
-                    loadChart("repostLine", seriesData);
-                    $("#repostLine_title").text("转发曲线\t转发总数：" + respData.repost_count);
-                    loadRanks(respData.repostRank);
-                    loadGexf(timestamp);
-                });
 
-            })
-        });
-    </script>
-    <script>
-        function loadChart(chartName, seriesData) {
-            //微博转发
-            Highcharts.setOptions({
-                lang: {
-                    resetZoom: '重置'
-                }
-            });
-            var repostChart = new Highcharts.Chart({
-                chart: {
-                    renderTo: chartName,
-                    type: "areaspline",
-                    zoomType: "x",
-                    backgroundColor: 'rgba(255, 255, 255, 0)',
-                    plotBackgroundColor: null,
-                    plotBorderWidth: null,
-                    plotBackgroundImage: null,
-                    plotBorderWidth: null
-                },
-                title: {text: "近期转发曲线",
-                    style: {
-                        color: '#fff'
-                    }},
-                legend: {
-                    enabled: true
-                },
-                xAxis: {
-                    type: 'datetime'
-                },
-                yAxis: {
-                    title: {
-                        text: '转发次数/5minutes',
-                        style: {
-                            color: '#fff'
-                        }
-                    },
-                    labels: {
-                        style: {color: '#000'}
-                    },
-                    lineColor: '#000',
-                    gridLineColor: '#000'
-                },
-                tooltip: {
-                    shared: true,
-                    valueSuffix: ''
-                },
-                credits: {
-                    enabled: false
-                },
-                plotOptions: {
-                    areaspline: {
-                        fillOpacity: 0.8
-                    }
-                },
-                series: [
-                    {name: '转发次数',
-                        type: 'area',
-                        fillColor: {
-                            linearGradient: [0, 0, 0, 500],
-                            stops: [
-                                [0, Highcharts.getOptions().colors[0]],
-                                [1, 'rgba(2,0,0,0)']
-                            ]
-                        },
-                        data: []}
-                ]
-            });
-            repostChart.series[0].setData(seriesData);
-            repostChart.redraw();
-        }
-
-        function loadRanks(rankData) {
-            var tableObj = $("#ranktable");
-            tableObj.empty();
-            tableObj.append("<tr style=\"border-bottom: 1px solid #FFB6C1;height: 5px;\"><th>排名</th><th style=\"width: 200px\">昵称</th><th>二次转发数</th></tr>");
-            for (var i = 0; i < 5; i++) {
-                tableObj.append("<tr class=\"tr" + i % 2 + "\"><td style=\"width:35px; color: #ff0325;\"><span class=\"tdtop\">" + rankData[i].rank + "</span></td><td style=\"width:147px; \"class=\"rankname\">" + rankData[i].name + "</td><td style=\"width:35px; color: #ff0325;\">" + rankData[i].repost_count + "</td></tr>");
-                //tableObj.rows[i].cell[1].innerHTML = rankData[i].name
-            }
-        }
-        var actualGraph;
-        function loadGexf(timestamp) {
-            //alert('loadgexf');
-            // sigma.refresh();
-            if (actualGraph) {
-                //alert("if");
-                sigma.parsers.gexf(
-                                'data/gexf/result-' + timestamp + '.gexf',
-                        actualGraph,
-                        function (s) {
-                            // This function will be executed when the
-                            // graph is displayed, with "s" the related
-                            // sigma instance.
-                            actualGraph.refresh();
-                        }
-                );
-            } else {
-                //alert("else");
-                sigma.parsers.gexf(
-                                'data/gexf/result-' + timestamp + '.gexf',
-                        { // Here is the ID of the DOM element that
-                            // will contain the graph:
-                            container: 'graph-container'
-                        },
-                        function (s) {
-                            // This function will be executed when the
-                            // graph is displayed, with "s" the related
-                            // sigma instance.
-                            actualGraph = s;
-                        }
-                );
-            }
-        }
-    </script>
 </head>
-<body>
-<div class="container">
-    <div class="box-header well" data-original-title="">微博转发分析</div>
+<body style="background:#D8F6FF  url(dataMiningResource/9.jpg) center 0 no-repeat;background-size:100% 100%;font-family:微软雅黑;">
+
+<div id="container">
+    <div id="headerFront"></div>
+
+    <div id="header">
+        <p style="margin:0;"><img src="dataMiningResource/ittc_banner.png" alt="" width="1000" height="104"/></p>
+    </div>
+    <div id="topmenu">
+        <ul class="menu">
+            <li><a href="../index.php"> 首页</a></li>
+            <li><a href="#">实验室简介</a>
+                <ul>
+                    <li><a href="../laboratoryDisplay/laboratoryInto.php">实验室介绍</a></li>
+                    <li><a href="../laboratoryDisplay/latestNews.php">最新动态</a></li>
+                </ul>
+            </li>
+            <li><a href="#">师资队伍</a>
+                <ul>
+                    <li><a href="teamMember.php">团队成员</a></li>
+                    <li><a href="expertAdvisor.php">专家顾问</a></li>
+                </ul>
+            </li>
+            <li><a href="#"> 成果展示</a>
+                <ul>
+                    <li><a href="../achievementDisplay/projectIntro.php">项目介绍 </a></li>
+                    <li><a href="../achievementDisplay/academicPaper.php">论文著作</a></li>
+                    <li><a href="../achievementDisplay/awardInformation.php">获奖信息</a></li>
+                </ul>
+            </li>
+            <li><a href="#"> 课程资源</a>
+                <ul>
+                    <li><a href="../excellentCourse/log.php?menuCource=informationTheory">信息论</a></li>
+                    <li><a href="../excellentCourse/log.php?menuCource=telecomunicationTheory">通信原理</a></li>
+                </ul>
+            </li>
+            <li><a href="#"><span class="iconic mail"></span> 学生风采</a>
+                <ul>
+                    <li><a href="../studentDisplay/excellentGraduate.php">优秀毕业生</a></li>
+                    <li><a href="../studentDisplay/outreachActivities.php">拓展活动</a></li>
+                    <li><a href="../studentDisplay/admissionInfo.php">招生信息</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+
     <div class="row">
         <div class="col-md-3"></div>
-        <div class="col-md-6">
+        <div class="col-md-6" style="top: 10px">
             <form class="form-inline">
                 <div class="box-content frameborder">
-                    <span>输入微博地址：</span>
+                    <span><a href="http://10.108.202.97:1234">输入微博地址：</a></span>
                     <input type="text" id="url_input" class="form-control" placeholder="待分析的微博地址">
-                    <button type="button" class="btn btn-primary" id="url_submit" datadata-loading-text="Loading...">
+                    <button type="button" class="btn btn-primary" id="url_submit"
+                            datadata-loading-text="Loading...">
                         分析
                     </button>
                 </div>
@@ -221,7 +221,7 @@
     </div>
     <div class="row">
         <div class="col-md-3"></div>
-        <div class="col-md-6 frameborder" style="top: 10px">
+        <div class="col-md-6 frameborder" style="top: 20px">
             <img src="images/sigma/2-small.png" class="titlelogo">
 
             <div class="title">
@@ -241,7 +241,7 @@
             <div class="title">
                 <span>转发层级图</span>
             </div>
-            <div id="graph-container" class="box" style="height: 90%;width: 100%"></div>
+            <div id="weibo-graph-container" style="height: 90%;width: 100%"></div>
             <style>
                 #graph-container {
                     top: 0;
@@ -269,20 +269,20 @@
             <div class="title">
                 <span class="top-left">转发排行</span>
             </div>
-            <table class="table" id="ranktable" style="height:300px">
-                <tr style="border-bottom: 1px solid #FFB6C1;height: 15px;">
-                    <th>排名</th>
-                    <th style="width: 200px">昵称</th>
-                    <th>二次转发数</th>
+            <table class="table" id="ranktable" style="height:280px">
+                <tr>
+                    <th style="width: 15%">排名</th>
+                    <th style="width: 70%">昵称</th>
+                    <th style="width: 15%">二次转发</th>
                 </tr>
             </table>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-9 frameborder" style="top: 50px;right: 5px">
             <div id="weibo"
-                 style="min-width: 280px; width:100%;height: 400px; margin: 20px auto; float:left;position:relative;top:20px;"
-                 class="frameborder">
+                 style="min-width: 80px; width:100%;height: 380px; margin: 10px auto; float:left;position:relative;"
+                    >
                 <div class="title">
                     <span>热点事件转发预测</span>
                 </div>
@@ -305,17 +305,18 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div style="min-width: 280px; width:100%; height: 240px; margin: 0 auto; float:right;position:relative;top:40px;"
-                 class="col-md-4 frameborder">
-                <div class="title">
-                    <span>微博内容</span>
-                </div>
-                <div id="weibotext" class="text"></div>
+        <div class="col-md-3 frameborder"
+             style="min-width: 70px; min-height: 200px;height: 100%; float:right;position:relative;top:50px;left: 5px"
+                >
+            <div class="title">
+                <span>微博内容</span>
             </div>
+            <div id="weibotext" class="text"></div>
         </div>
     </div>
 </div>
+<div id="footer" style="top: 900px">copyright@北京邮电大学信息理论与技术教研中心</div>
+
 
 </body>
 </html>
