@@ -27,19 +27,25 @@ def get_gexf():
     timestamp = post_data['timestamp']
     print url
     print timestamp
-    cmd_text = "java -jar %s/jars/WeiboDisseminationAnalysis.jar \"%s\" 5 %s/data/gexf/result-%s.gexf" % (
+    cmd_text = "java -jar %s/jars/WeiboDisseminationAnalysis.jar \"%s\" 5 \"%s/data/gexf/result-%s.gexf\"" % (
         web_path, url, web_path, timestamp)
     print cmd_text
 
     # import subprocess
     #
     # subprocess.call(['java', '-jar', '%s/jars/WeiboDisseminationAnalysis.jar' % web_path])
-    pro = subprocess.Popen(cmd_text)
+    pro = subprocess.Popen(cmd_text,cwd="%s/jars/"%web_path,shell=True)
     # print os.popen(cmd_text)
     # Popen.wait()
+    # while True:
+    #     buff = pro.stdout.readline()
+    #     if buff == '' and pro.poll() != None:
+    #         break
     pro.wait()
     datafile = open('%s/data/gexf/result-%s-data.txt' % (web_path, timestamp), 'r')
-    return datafile.read()
+    print 'done'
+    ds = datafile.read()
+    return ds
     # return '123123'
 
 
