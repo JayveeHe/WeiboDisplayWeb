@@ -27,7 +27,7 @@ def get_gexf():
     timestamp = post_data['timestamp']
     print url
     print timestamp
-    cmd_text = "java -jar %s/jars/WeiboDisseminationAnalysis.jar \"%s\" 5 \"%s/data/gexf/result-%s.gexf\"" % (
+    cmd_text = "java -jar %s/jars/WeiboDisseminationAnalysis.jar \"%s\" 5 %s/data/gexf/result-%s.gexf" % (
         web_path, url, web_path, timestamp)
     print cmd_text
 
