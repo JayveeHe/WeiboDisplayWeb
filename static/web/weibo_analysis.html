@@ -63,10 +63,10 @@
                 var url = $("#url_input").val();
                 var timestamp = new Date().getTime();
                 //loadGexf();
-                $.post('/gexf', {url: url, timestamp: timestamp }, function (data) {
+                $.post('/gexf', {url: url, timestamp: timestamp}, function (data) {
                     alert("ok");
                     var respData = JSON.parse(data);
-                    $("#originText").text("@"+respData.userName+":\n"+respData.weiboText);
+                    $("#originText").text("@" + respData.userName + ":\n" + respData.weiboText);
                     var seriesData = [];
                     //alert(respData.time_series.length);
                     for (var i = 0; i < respData.time_series.length; i++) {
@@ -74,10 +74,13 @@
                     }
                     //alert(seriesData);
                     loadChart("repostLine", seriesData);
-                    $("#repostLine_title").text("转发曲线\t转发总数："+respData.repost_count);
+                    $("#repostLine_title").text("转发曲线\t转发总数：" + respData.repost_count);
                     loadRanks(respData.repostRank);
                     loadGexf(timestamp);
                     //$("#url_submit").button('reset')
+                }).fail(function (data) {
+                    console.log(data);
+                    alert(data.responseText);
                 });
 
             })
@@ -99,17 +102,19 @@
                 chart: {
                     renderTo: chartName,
                     type: "areaspline",
-                    zoomType:"x",
+                    zoomType: "x",
                     backgroundColor: 'rgba(255, 255, 255, 0)',
                     plotBackgroundColor: null,
                     plotBorderWidth: null,
                     plotBackgroundImage: null,
                     plotBorderWidth: null
                 },
-                title: {text: "近期转发曲线",
+                title: {
+                    text: "近期转发曲线",
                     style: {
                         color: '#fff'
-                    }},
+                    }
+                },
                 legend: {
                     enabled: true
                 },
@@ -142,7 +147,8 @@
                     }
                 },
                 series: [
-                    {name: '转发次数',
+                    {
+                        name: '转发次数',
                         type: 'area',
                         fillColor: {
                             linearGradient: [0, 0, 0, 500],
@@ -151,7 +157,8 @@
                                 [1, 'rgba(2,0,0,0)']
                             ]
                         },
-                        data: []}
+                        data: []
+                    }
                 ]
             });
             repostChart.series[0].setData(seriesData);
@@ -163,7 +170,7 @@
             tableObj.empty();
             tableObj.append("<tr style=\"border-bottom: 1px solid #FFB6C1;height: 5px;\"><th>排名</th><th style=\"width: 200px\">昵称</th><th>二次转发数</th></tr>");
             var max_i = 5;
-            for (var i = 0; i < 5&&i<rankData.length; i++) {
+            for (var i = 0; i < 5 && i < rankData.length; i++) {
                 tableObj.append("<tr class=\"tr" + i % 2 + "\"><td style=\"width:35px; color: #ff0325;\"><span class=\"tdtop\">" + rankData[i].rank + "</span></td><td style=\"width:147px; \"class=\"rankname\">" + rankData[i].name + "</td><td style=\"width:35px; color: #ff0325;\">" + rankData[i].repost_count + "</td></tr>");
                 //tableObj.rows[i].cell[1].innerHTML = rankData[i].name
             }
@@ -175,7 +182,7 @@
             if (actualGraph) {
                 //alert("if");
                 sigma.parsers.gexf(
-                                'data/gexf/result-' + timestamp + '.gexf',
+                        'data/gexf/result-' + timestamp + '.gexf',
                         actualGraph,
                         function (s) {
                             // This function will be executed when the
@@ -187,7 +194,7 @@
             } else {
                 //alert("else");
                 sigma.parsers.gexf(
-                                'data/gexf/result-' + timestamp + '.gexf',
+                        'data/gexf/result-' + timestamp + '.gexf',
                         { // Here is the ID of the DOM element that
                             // will contain the graph:
                             container: 'graph-container'

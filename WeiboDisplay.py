@@ -2,7 +2,7 @@
 import os
 from subprocess import Popen
 import subprocess
-from flask import Flask, request, url_for, redirect
+from flask import Flask, request, url_for, redirect, make_response
 import sys
 
 app = Flask(__name__)
@@ -34,7 +34,7 @@ def get_gexf():
     # import subprocess
     #
     # subprocess.call(['java', '-jar', '%s/jars/WeiboDisseminationAnalysis.jar' % web_path])
-    pro = subprocess.Popen(cmd_text,cwd="%s/jars/"%web_path,shell=True)
+    pro = subprocess.Popen(cmd_text, cwd="%s/jars/" % web_path, shell=True)
     # print os.popen(cmd_text)
     # Popen.wait()
     # while True:
@@ -42,11 +42,14 @@ def get_gexf():
     #     if buff == '' and pro.poll() != None:
     #         break
     pro.wait()
-    datafile = open('%s/data/gexf/result-%s-data.txt' % (web_path, timestamp), 'r')
-    print 'done'
-    ds = datafile.read()
-    return ds
-    # return '123123'
+    try:
+        datafile = open('%s/data/gexf/result-%s-data.txt' % (web_path, timestamp), 'r')
+        print 'done'
+        ds = datafile.read()
+        return ds
+    except:
+        return make_response('发生错误，请等待一段时间后重试，或者替换一条微博。', 500)
+        # return '123123'
 
 
 if __name__ == '__main__':
